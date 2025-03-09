@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Colorful Accordion</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Comic Neue', cursive;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f9ff;
+            background-image: linear-gradient(120deg, #e0f7fa 0%, #f5f0ff 100%);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4a148c;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            font-size: 2.5rem;
+        }
+        
+        p {
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .accordion {
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .accordion-item {
+            margin-bottom: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        /* Different colors for each accordion item */
+        .accordion-item:nth-child(4n+1) .accordion-header {
+            background-color: #ff7043;
+            background-image: linear-gradient(45deg, #ff7043 0%, #ff9800 100%);
+        }
+        
+        .accordion-item:nth-child(4n+2) .accordion-header {
+            background-color: #42a5f5;
+            background-image: linear-gradient(45deg, #42a5f5 0%, #4fc3f7 100%);
+        }
+        
+        .accordion-item:nth-child(4n+3) .accordion-header {
+            background-color: #66bb6a;
+            background-image: linear-gradient(45deg, #66bb6a 0%, #81c784 100%);
+        }
+        
+        .accordion-item:nth-child(4n+4) .accordion-header {
+            background-color: #ab47bc;
+            background-image: linear-gradient(45deg, #ab47bc 0%, #ce93d8 100%);
+        }
+        
+        .accordion-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .accordion-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .accordion-header.active {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .accordion-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease;
+            background-color: white;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        
+        .accordion-content.show {
+            padding: 20px;
+            max-height: 1000px; /* Arbitrary large value */
+        }
+        
+        .accordion-icon {
+            width: 24px;
+            height: 24px;
+            position: relative;
+        }
+        
+        .accordion-icon:before,
+        .accordion-icon:after {
+            content: '';
+            position: absolute;
+            background-color: white;
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-icon:before {
+            width: 2px;
+            height: 24px;
+            left: 11px;
+            top: 0;
+        }
+        
+        .accordion-icon:after {
+            width: 24px;
+            height: 2px;
+            left: 0;
+            top: 11px;
+        }
+        
+        .accordion-header.active .accordion-icon:before {
+            transform: rotate(90deg);
+        }
+        
+        .edit-btn {
+            background-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .edit-btn:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .controls {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .add-section-btn {
+            background-color: #ff4081;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(255, 64, 129, 0.3);
+            transition: all 0.3s;
+            font-family: 'Comic Neue', cursive;
+        }
+        
+        .add-section-btn:hover {
+            background-color: #f50057;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 64, 129, 0.4);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 70%;
+            max-width: 550px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.4s;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .modal-header h2 {
+            color: #4a148c;
+            margin: 0;
+        }
+        
+        .close-btn {
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 1.1rem;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Comic Neue', cursive;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #9c27b0;
+            outline: none;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .save-btn,
+        .cancel-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Comic Neue', cursive;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .save-btn {
+            background-color: #4caf50;
+            color: white;
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .save-btn:hover {
+            background-color: #43a047;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+            box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+        }
+        
+        .cancel-btn:hover {
+            background-color: #e53935;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(244, 67, 54, 0.4);
+        }
+        
+        /* Animation for accordion content */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .accordion-content.show {
+            animation: fadeIn 0.5s;
+        }
+        
+        /* Educational styling for content */
+        .accordion-content h3 {
+            color: #4a148c;
+            border-bottom: 2px dotted #ce93d8;
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+        
+        .accordion-content ul, 
+        .accordion-content ol {
+            padding-left: 25px;
+        }
+        
+        .accordion-content li {
+            margin-bottom: 8px;
+        }
+        
+        .accordion-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        /* Adding cool bullet styles */
+        .accordion-content ul {
+            list-style: none;
+        }
+        
+        .accordion-content ul li::before {
+            content: "🔹";
+            margin-right: 10px;
+        }
+        
+        .accordion-content ol li::marker {
+            color: #9c27b0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Educational Accordion</h1>
+    <p>Click on any colorful section to expand or collapse! You can add your own educational content easily.</p>
+    
+    <div class="controls">
+        <button class="add-section-btn" id="addSectionBtn">Add New Topic ✏️</button>
+    </div>
+    
+    <div class="accordion" id="accordion">
+        <div class="accordion-item">
+            <div class="accordion-header">
+                <span>Mathematics: Fractions</span>
+                <div class="header-buttons">
+                    <button class="edit-btn">Edit</button>
+                    <div class="accordion-icon"></div>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <h3>Understanding Fractions</h3>
+                <p>Fractions represent parts of a whole. They consist of:</p>
+                <ul>
+                    <li><strong>Numerator</strong>: The top number that represents how many parts we have</li>
+                    <li><strong>Denominator</strong>: The bottom number that represents how many equal parts the whole is divided into</li>
+                </ul>
+                <p>For example, in the fraction 3/4:</p>
+                <ul>
+                    <li>3 is the numerator (we have 3 parts)</li>
+                    <li>4 is the denominator (out of 4 equal parts)</li>
+                </ul>
+                <p>When adding fractions with the same denominator, we simply add the numerators:</p>
+                <p style="text-align:center; font-size: 1.2rem;">1/4 + 2/4 = 3/4</p>
+            </div>
+        </div>
+        
+        <div class="accordion-item">
+            <div class="accordion-header">
+                <span>Science: States of Matter</span>
+                <div class="header-buttons">
+                    <button class="edit-btn">Edit</button>
+                    <div class="accordion-icon"></div>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <h3>The Three Common States of Matter</h3>
+                <p>Matter exists in different states, the most common being:</p>
+                <ul>
+                    <li><strong>Solid</strong>: Particles are tightly packed, vibrate in place. Solids have a fixed shape and volume.</li>
+                    <li><strong>Liquid</strong>: Particles are close but can move around each other. Liquids have a fixed volume but take the shape of their container.</li>
+                    <li><strong>Gas</strong>: Particles are far apart and move freely. Gases have neither fixed shape nor volume.</li>
+                </ul>
+                <p>Matter can change from one state to another when energy is added or removed:</p>
+                <ul>
+                    <li>Melting: Solid → Liquid (adding heat)</li>
+                    <li>Freezing: Liquid → Solid (removing heat)</li>
+                    <li>Evaporation: Liquid → Gas (adding heat)</li>
+                    <li>Condensation: Gas → Liquid (removing heat)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="accordion-item">
+            <div class="accordion-header">
+                <span>Language Arts: Parts of Speech</span>
+                <div class="header-buttons">
+                    <button class="edit-btn">Edit</button>
+                    <div class="accordion-icon"></div>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <h3>The Building Blocks of Language</h3>
+                <p>There are eight main parts of speech in English:</p>
+                <ol>
+                    <li><strong>Nouns</strong>: Name people, places, things, or ideas (dog, city, happiness)</li>
+                    <li><strong>Pronouns</strong>: Replace nouns (he, she, they, it)</li>
+                    <li><strong>Verbs</strong>: Show action or state of being (run, jump, is, are)</li>
+                    <li><strong>Adjectives</strong>: Describe or modify nouns (happy, tall, blue)</li>
+                    <li><strong>Adverbs</strong>: Modify verbs, adjectives, or other adverbs (quickly, very, extremely)</li>
+                    <li><strong>Prepositions</strong>: Show relationships in space or time (in, on, at, before)</li>
+                    <li><strong>Conjunctions</strong>: Connect words or groups of words (and, but, or)</li>
+                    <li><strong>Interjections</strong>: Express emotion (wow, ouch, hooray)</li>
+                </ol>
+                <p>Understanding these helps us construct clear, effective sentences!</p>
+            </div>
+        </div>
+        
+        <div class="accordion-item">
+            <div class="accordion-header">
+                <span>History: Ancient Egypt</span>
+                <div class="header-buttons">
+                    <button class="edit-btn">Edit</button>
+                    <div class="accordion-icon"></div>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <h3>The Civilization of Ancient Egypt</h3>
+                <p>Ancient Egypt was one of the world's first great civilizations, lasting from about 3100 BCE to 30 BCE.</p>
+                <p>Key features included:</p>
+                <ul>
+                    <li><strong>The Nile River</strong>: Provided fertile soil for farming and a route for transportation</li>
+                    <li><strong>Pyramids</strong>: Massive tombs built for pharaohs, especially during the Old Kingdom</li>
+                    <li><strong>Hieroglyphics</strong>: A writing system using pictures and symbols</li>
+                    <li><strong>Religion</strong>: Worship of many gods and goddesses, with the pharaoh considered divine</li>
+                </ul>
+                <p>Ancient Egypt was ruled by pharaohs, who were considered to be both kings and gods. Famous pharaohs included Tutankhamun, Ramses II, and Cleopatra.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit/Add Modal -->
+    <div class="modal" id="sectionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Edit Topic</h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="sectionTitle">Topic Title</label>
+                <input type="text" id="sectionTitle" placeholder="Enter topic title">
+            </div>
+            <div class="form-group">
+                <label for="sectionContent">Content (HTML supported)</label>
+                <textarea id="sectionContent" placeholder="Enter your educational content (you can use HTML tags)"></textarea>
+            </div>
+            <div class="btn-container">
+                <button class="cancel-btn" id="cancelBtn">Cancel</button>
+                <button class="save-btn" id="saveBtn">Save Topic</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved accordion data from localStorage
+            loadAccordionData();
+            
+            // Initialize accordion functionality
+            initAccordion();
+            
+            // Initialize the add/edit modal
+            initModal();
+        });
+        
+        function initAccordion() {
+            const headers = document.querySelectorAll('.accordion-header');
+            
+            headers.forEach(header => {
+                // Remove any existing event listeners
+                const newHeader = header.cloneNode(true);
+                header.parentNode.replaceChild(newHeader, header);
+                
+                // Add click event for toggling content
+                newHeader.addEventListener('click', function(e) {
+                    // Don't toggle if clicking the edit button
+                    if (e.target.classList.contains('edit-btn')) {
+                        return;
+                    }
+                    
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    content.classList.toggle('show');
+                });
+                
+                // Add edit button functionality
+                const editBtn = newHeader.querySelector('.edit-btn');
+                editBtn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent accordion from toggling
+                    
+                    const accordionItem = this.closest('.accordion-item');
+                    const titleSpan = accordionItem.querySelector('.accordion-header > span');
+                    const content = accordionItem.querySelector('.accordion-content');
+                    
+                    openModal('edit', {
+                        index: Array.from(accordionItem.parentNode.children).indexOf(accordionItem),
+                        title: titleSpan.textContent,
+                        content: content.innerHTML
+                    });
+                });
+            });
+        }
+        
+        function initModal() {
+            const modal = document.getElementById('sectionModal');
+            const addBtn = document.getElementById('addSectionBtn');
+            const closeBtn = document.querySelector('.close-btn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            
+            // Open modal when Add Section button is clicked
+            addBtn.addEventListener('click', function() {
+                openModal('add');
+            });
+            
+            // Close modal when X is clicked
+            closeBtn.addEventListener('click', closeModal);
+            
+            // Close modal when Cancel is clicked
+            cancelBtn.addEventListener('click', closeModal);
+            
+            // Close modal when clicking outside of it
+            window.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Save changes when Save button is clicked
+            saveBtn.addEventListener('click', saveChanges);
+        }
+        
+        let currentEditIndex = -1;
+        let isEditing = false;
+        
+        function openModal(mode, data = null) {
+            const modal = document.getElementById('sectionModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const sectionTitle = document.getElementById('sectionTitle');
+            const sectionContent = document.getElementById('sectionContent');
+            
+            // Reset form
+            sectionTitle.value = '';
+            sectionContent.value = '';
+            
+            if (mode === 'add') {
+                modalTitle.textContent = 'Add New Topic';
+                isEditing = false;
+            } else {
+                modalTitle.textContent = 'Edit Topic';
+                sectionTitle.value = data.title;
+                sectionContent.value = data.content;
+                currentEditIndex = data.index;
+                isEditing = true;
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('sectionModal');
+            modal.style.display = 'none';
+        }
+        
+        function saveChanges() {
+            const sectionTitle = document.getElementById('sectionTitle').value;
+            const sectionContent = document.getElementById('sectionContent').value;
+            
+            if (!sectionTitle) {
+                alert('Please enter a topic title');
+                return;
+            }
+            
+            if (isEditing) {
+                // Update existing section
+                updateSection(currentEditIndex, sectionTitle, sectionContent);
+            } else {
+                // Add new section
+                addSection(sectionTitle, sectionContent);
+            }
+            
+            // Close the modal
+            closeModal();
+            
+            // Save to localStorage
+            saveAccordionData();
+        }
+        
+        function addSection(title, content) {
+            const accordion = document.getElementById('accordion');
+            
+            const newItem = document.createElement('div');
+            newItem.className = 'accordion-item';
+            
+            newItem.innerHTML = `
+                <div class="accordion-header">
+                    <span>${title}</span>
+                    <div class="header-buttons">
+                        <button class="edit-btn">Edit</button>
+                        <div class="accordion-icon"></div>
+                    </div>
+                </div>
+                <div class="accordion-content">
+                    ${content}
+                </div>
+            `;
+            
+            accordion.appendChild(newItem);
+            
+            // Reinitialize accordion to bind event listeners to new item
+            initAccordion();
+        }
+        
+        function updateSection(index, title, content) {
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            const item = accordionItems[index];
+            
+            if (item) {
+                const titleSpan = item.querySelector('.accordion-header > span');
+                const contentDiv = item.querySelector('.accordion-content');
+                
+                titleSpan.textContent = title;
+                contentDiv.innerHTML = content;
+            }
+        }
+        
+        function saveAccordionData() {
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            const data = [];
+            
+            accordionItems.forEach(item => {
+                const title = item.querySelector('.accordion-header > span').textContent;
+                const content = item.querySelector('.accordion-content').innerHTML;
+                const isActive = item.querySelector('.accordion-header').classList.contains('active');
+                
+                data.push({ title, content, isActive });
+            });
+            
+            localStorage.setItem('accordionData', JSON.stringify(data));
+        }
+        
+        function loadAccordionData() {
+            const savedData = localStorage.getItem('accordionData');
+            
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                const accordion = document.getElementById('accordion');
+                
+                // Clear existing items
+                accordion.innerHTML = '';
+                
+                // Add saved items
+                data.forEach(item => {
+                    const newItem = document.createElement('div');
+                    newItem.className = 'accordion-item';
+                    
+                    const activeClass = item.isActive ? 'active' : '';
+                    const showClass = item.isActive ? 'show' : '';
+                    
+                    newItem.innerHTML = `
+                        <div class="accordion-header ${activeClass}">
+                            <span>${item.title}</span>
+                            <div class="header-buttons">
+                                <button class="edit-btn">Edit</button>
+                                <div class="accordion-icon"></div>
+                            </div>
+                        </div>
+                        <div class="accordion-content ${showClass}">
+                            ${item.content}
+                        </div>
+                    `;
+                    
+                    accordion.appendChild(newItem);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
